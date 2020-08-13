@@ -8,9 +8,9 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from models.cnn_lstm import ConvNetLSTM
+from train import args
 from tools.load_data import load_testing_data
 from tools.save_data import save_predictions
-from train import args
 
 model = ConvNetLSTM()
 
