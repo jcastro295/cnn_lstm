@@ -9,11 +9,11 @@ Created on Sat May  9 16:47:48 2020
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import scipy.io as sio
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 from models.cnn_lstm import ConvNetLSTM
 from tools.load_data import load_training_data
+from tools.save_data import save_model
 
 
 args = dict(cuda=True,
@@ -142,7 +142,7 @@ val_loss = []
 for epoch in range(1, args['epochs'] + 1):
     train_loss += train(epoch, args['epochs'])
     val_loss.append(validation(epoch, args['epochs']))
-sio.savemat('NEW_CNN_LSTM_run_1.mat', mdict={'train_loss': train_loss, 'val_loss': val_loss})
 
-PATH = 'NEW_CNN_LSTM_run_1.pt'
-torch.save(model.state_dict(), PATH)
+save_model(model.state_dict(),
+           dict(training_loss=train_loss, validaton_loss=val_loss),
+           'model_test')

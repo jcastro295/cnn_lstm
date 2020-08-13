@@ -7,9 +7,9 @@ Created on Sun May 10 20:00:59 2020
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-import scipy.io as sio
 from models.cnn_lstm import ConvNetLSTM
 from tools.load_data import load_testing_data
+from tools.save_data import save_predictions
 from train import args
 
 model = ConvNetLSTM()
@@ -67,4 +67,5 @@ for test_num in range(5):
                 if predictions.size else output
     # Save predictions per testing dataset as a matlab file
     name = OUTPUT_FILENAME + 'Test' + strs[test_num] + '.mat'
-    sio.savemat(name, mdict={'predicted_labels': predictions})
+
+    save_predictions(dict(predictions=predictions), "predictions_test")
