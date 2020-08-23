@@ -7,14 +7,16 @@ Created on Sat May  9 16:47:48 2020
 # pytorch mnist cnn + lstm
 
 import torch
-import torch.nn as nn
-import torch.optim as optim
+import numpy as np
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 from models.cnn_lstm import ConvNetLSTM
 from tools.load_data import load_training_data
 from tools.save_data import save_model
-
+from tools.useful_functions import set_optimizer
+from tools.useful_functions import set_criterion
+from tools.useful_functions import set_learning_rate_scheduler
+from tools.early_stopping import EarlyStopping
 
 args = dict(cuda=True,
             no_cuda=False,
@@ -22,7 +24,9 @@ args = dict(cuda=True,
             val_batch_size=33,
             epochs=160,
             learning_rate=0.0001,
-            seed=42)
+            seed=42,
+            patience=20,
+            verbose=True)
 
 def train(current_epoch, num_epochs):
     """
@@ -42,7 +46,7 @@ def train(current_epoch, num_epochs):
     loss: list
         List with loss obtained in epoc
     """
-    loss = []
+    training_loss = []
     model.train()
     for i, (data, target) in enumerate(train_loader):
 
@@ -55,13 +59,12 @@ def train(current_epoch, num_epochs):
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
-        loss.append(loss.item())
+        training_loss.append(loss.item())
         print('Train epoch [{}/{}], Iter [{}/{}], Loss: {:.4f}'
               .format(current_epoch, num_epochs, i+1, len(train_loader), loss.item()))
-    return loss
+    return training_loss
 
 
-val_criterion = nn.MSELoss(reduction='none')
 def validation(current_epoch, num_epochs):
     """
     Validation function for ResNet
@@ -80,8 +83,10 @@ def validation(current_epoch, num_epochs):
     loss: list
         List with loss obtained in epoc
     """
+
+    #let's play with this
+    valid_losses = []
     model.eval()
-    loss = 0
     with torch.no_grad():
         for data, target in val_loader:
 
@@ -89,11 +94,12 @@ def validation(current_epoch, num_epochs):
                 data, target = data.cuda(), target.cuda()
 
             output = model(data)
-            loss += val_criterion(output, target)  # sum up batch loss
-        loss /= len(val_loader)
+            loss = criterion(output, target)
+            valid_losses.append(loss.item())
+        validation_loss = np.average(valid_losses)
         print('\nValidation Loss: {:.4f}, epoch [{}/{}]\n'
-              .format(loss.mean(), current_epoch, num_epochs))
-    return loss.mean().cpu().numpy()
+              .format(validation_loss, current_epoch, num_epochs))
+    return validation_loss
 
 
 #Calling function of arguments
@@ -133,15 +139,29 @@ if args['cuda']:
     model.cuda()
 
 #Optimizer and training criterion
-optimizer = optim.Adam(model.parameters(), lr=args['learning_rate'])
-criterion = nn.MSELoss()
+optimizer = set_optimizer('adam', model.parameters(), lr=args['learning_rate'])
+#optimizer = optim.Adam(model.parameters(), lr=args['learning_rate'])
+criterion = set_criterion('mse')
+#criterion = nn.MSELoss()
 
 #Running training and validation
 train_loss = []
 val_loss = []
+
+#initialize the early_stopping object
+early_stopping = EarlyStopping(patience=args['patience'], verbose=args['verbose'])
+scheduler = set_learning_rate_scheduler('cosine', optimizer, T_max=args['epochs']/5, eta_min=0)
+
 for epoch in range(1, args['epochs'] + 1):
     train_loss += train(epoch, args['epochs'])
-    val_loss.append(validation(epoch, args['epochs']))
+    val_losss = validation(epoch, args['epochs'])
+    val_loss.append(val_losss)
+    scheduler.step()
+    early_stopping(val_losss, model)
+
+    if early_stopping.early_stop:
+        print("Early stopping")
+        break
 
 save_model(model.state_dict(),
            dict(training_loss=train_loss, validaton_loss=val_loss),
