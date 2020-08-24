@@ -13,7 +13,6 @@ from sklearn.model_selection import train_test_split
 
 from models.cnn_lstm import ConvNetLSTM
 from tools.load_data import load_training_data
-from tools.save_data import save_model
 from tools.useful_functions import set_optimizer
 from tools.useful_functions import set_criterion
 from tools.useful_functions import set_learning_rate_scheduler
@@ -23,7 +22,7 @@ args = dict(cuda=True,
             no_cuda=False,
             batch_size=33,
             val_batch_size=33,
-            epochs=200,
+            epochs=3,
             learning_rate=0.001,
             seed=42,
             patience=20,
@@ -109,6 +108,7 @@ if __name__ == "__main__":
 
     #Let's load the data
     PATH = 'C:/Users/Jhon/Documents/Udel/Research/Data/TrainingData.mat'
+    MODEL_NAME = 'trained_model_1'
 
     train_x, train_y = load_training_data(PATH)
 
@@ -153,18 +153,17 @@ if __name__ == "__main__":
     val_loss = []
 
     #initialize the early_stopping object
-    early_stopping = EarlyStopping(patience=args['patience'], verbose=args['verbose'])
+    early_stopping = EarlyStopping(patience=args['patience'], verbose=args['verbose'],
+                                   path=MODEL_NAME)
     scheduler = set_learning_rate_scheduler('cosine', optimizer, T_max=args['epochs']/5, eta_min=0)
 
     for epoch in range(1, args['epochs'] + 1):
         train_loss += train(epoch, args['epochs'])
-        val_losss = validation(epoch, args['epochs'])
-        val_loss.append(val_losss)
+        temp_val_loss = validation(epoch, args['epochs'])
+        val_loss.append(temp_val_loss)
         scheduler.step()
-        early_stopping(val_losss, model)
+        early_stopping(train_loss, val_loss, temp_val_loss, model)
 
         if early_stopping.early_stop:
             print("Early stopping")
             break
-
-    save_model(model, train_loss, val_loss, filename='model_test')

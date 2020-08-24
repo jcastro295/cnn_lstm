@@ -2,10 +2,8 @@
 Written by Jhon Castro
 """
 
-import os
-import os.path as osp
 import numpy as np
-import torch
+from tools.save_data import save_model
 
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
@@ -33,13 +31,13 @@ class EarlyStopping:
         self.path = path
         self.trace_func = trace_func
 
-    def __call__(self, val_loss, model):
+    def __call__(self, training_loss, validation_loss, val_loss, model):
 
         score = -val_loss
 
         if self.best_score is None:
             self.best_score = score
-            self.save_checkpoint(val_loss, model)
+            self.save_checkpoint(training_loss, validation_loss, val_loss, model)
         elif score < self.best_score + self.delta:
             self.counter += 1
             self.trace_func(f'EarlyStopping counter: {self.counter} out of {self.patience}')
@@ -47,18 +45,14 @@ class EarlyStopping:
                 self.early_stop = True
         else:
             self.best_score = score
-            self.save_checkpoint(val_loss, model)
+            self.save_checkpoint(training_loss, validation_loss, val_loss, model)
             self.counter = 0
 
-    def save_checkpoint(self, val_loss, model):
+    def save_checkpoint(self, training_loss, validation_loss, val_loss, model):
         '''Saves model when validation loss decrease.'''
         if self.verbose:
             self.trace_func(f'Validation loss decreased ({self.val_loss_min:.6f} --> \
                             {val_loss:.6f}).  Saving model ...')
 
-        if not osp.exists('output'):
-            os.makedirs('output')
-
-        path = 'output/' + self.path
-        torch.save(model, path)
+        save_model(model, training_loss, validation_loss, filename=self.path)
         self.val_loss_min = val_loss
