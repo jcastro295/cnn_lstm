@@ -19,7 +19,7 @@ def save_model(model_dict, train_loss, val_loss, filename="default_ouput"):
 
     hdf5storage.savemat('output/' + filename,
                         mdict={'training_loss' : train_loss, 'validation_loss' : val_loss})
-    torch.save(model_dict, 'output/' + filename + '.pt') 
+    torch.save(model_dict, 'output/' + filename + '.pt')
 
     print('File has been saved succesfully')
 
