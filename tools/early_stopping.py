@@ -1,6 +1,9 @@
 """
 Written by Jhon Castro
 """
+
+import os
+import os.path as osp
 import numpy as np
 import torch
 
@@ -52,5 +55,9 @@ class EarlyStopping:
         if self.verbose:
             self.trace_func(f'Validation loss decreased ({self.val_loss_min:.6f} \
                             --> {val_loss:.6f}).  Saving model ...')
+
+        if not osp.exists('output'):
+            os.makedirs('output')
+
         torch.save(model.state_dict(), self.path)
         self.val_loss_min = val_loss
