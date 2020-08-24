@@ -167,6 +167,4 @@ for epoch in range(1, args['epochs'] + 1):
         print("Early stopping")
         break
 
-save_model(model.state_dict(),
-           dict(training_loss=train_loss, validaton_loss=val_loss),
-           'model_test')
+save_model(model.state_dict(), train_loss, val_loss, filename='model_test')

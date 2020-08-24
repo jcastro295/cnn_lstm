@@ -68,4 +68,4 @@ for test_num in range(5):
     # Save predictions per testing dataset as a matlab file
     name = OUTPUT_FILENAME + 'Test' + strs[test_num] + '.mat'
 
-    save_predictions(dict(predictions=predictions), "predictions_test")
+    save_predictions(predictions, filename="predictions_test")
