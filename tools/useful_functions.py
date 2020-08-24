@@ -70,7 +70,7 @@ def set_learning_rate_scheduler(scheduler_name, optimizer, **kwargs):
     return scheduler
 
 
-def set_optimizer(optimizer_name, *args, **kwargs):
+def set_optimizer(optimizer_name):
     """
     Optimizer for training
 
@@ -86,15 +86,15 @@ def set_optimizer(optimizer_name, *args, **kwargs):
     """
 
     optimizer_name = optimizer_name.lower()
-
+    
     if optimizer_name == "adam":
-        optimizer = optim.Adam(args, kwargs)
+        optimizer = optim.Adam
     elif optimizer_name == "adamw":
-        optimizer = optim.AdamW(args, kwargs)
+        optimizer = optim.AdamW
     elif optimizer_name == "sgd":
-        optimizer = optim.SGD(args, kwargs)
+        optimizer = optim.SGD
     elif optimizer_name == "adamax":
-        optimizer = optim.Adamax(args, kwargs)
+        optimizer = optim.Adamax
     else:
         raise KeyError("Sorry, but that optimizer isn't available")
 

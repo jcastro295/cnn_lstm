@@ -17,8 +17,8 @@ def save_model(model_dict, loss_dict, filename="default_ouput"):
     if not osp.exists('../output'):
         os.makedirs('../output')
 
-    hdf5storage.savemat('...output/' + filename, mdict=loss_dict)
-    torch.save(model_dict(), '../output/' + filename + '.pt')
+    hdf5storage.savemat('../output/' + filename, mdict=loss_dict)
+    torch.save(model_dict, '../output/' + filename + '.pt')
 
     print('File has been saved succesfully')
 
@@ -30,6 +30,6 @@ def save_predictions(prediction_dict, filename="default_prediction"):
     if not osp.exists('../output'):
         os.makedirs('../output')
 
-    hdf5storage.savemat('../output' + filename, mdict=prediction_dict)
+    hdf5storage.savemat('../output/' + filename, mdict=prediction_dict)
 
     print('File has been saved succesfully')

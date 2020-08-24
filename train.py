@@ -23,7 +23,7 @@ args = dict(cuda=True,
             no_cuda=False,
             batch_size=33,
             val_batch_size=33,
-            epochs=160,
+            epochs=1,
             learning_rate=0.0001,
             seed=42,
             patience=20,
@@ -108,7 +108,7 @@ def validation(current_epoch, num_epochs):
 args['cuda'] = not args['no_cuda'] and torch.cuda.is_available()
 
 #Let's load the data
-PATH = 'C:/Users/Jhon/Documents/Udel/Research/Data/TrainingData.mat'
+PATH = 'D:/Desktop/Networks/TrainingData.mat'
 
 train_x, train_y = load_training_data(PATH)
 
@@ -116,6 +116,11 @@ train_y[:, 0] = train_y[:, 0]/0.65
 train_y[:, 1] = train_y[:, 1]/11.9536171
 train_y[:, 2] = train_y[:, 2]*20
 train_y[:, 3] = train_y[:, 3]*25
+
+#80 1107 1 6600  -> (6600, 41, 1, 80, 27)
+#changing dimensions x train
+train_x = train_x.reshape(train_x.shape[0], -1, 27, train_x.shape[2], train_x.shape[3])
+train_x = train_x.transpose([4, 1, 3, 0, 2])
 
 #Creating validation set
 train_x, val_x, train_y, val_y = train_test_split(train_x, train_y,
@@ -140,10 +145,8 @@ if args['cuda']:
     model.cuda()
 
 #Optimizer and training criterion
-optimizer = set_optimizer('adam', model.parameters(), lr=args['learning_rate'])
-#optimizer = optim.Adam(model.parameters(), lr=args['learning_rate'])
+optimizer = set_optimizer('adam')(model.parameters(), lr=args['learning_rate'])
 criterion = set_criterion('mse')
-#criterion = nn.MSELoss()
 
 #Running training and validation
 train_loss = []
