@@ -28,9 +28,9 @@ def save_predictions(predictions, filename="default_prediction"):
     """
     Definition
     """
-    if not osp.exists('output'):
-        os.makedirs('output')
+    if not osp.exists('tests'):
+        os.makedirs('tests')
 
-    hdf5storage.savemat('output/' + filename, mdict={'predictions' : predictions})
+    hdf5storage.savemat('tests/' + filename, mdict={'predictions' : predictions})
 
     print('File has been saved succesfully')
