@@ -1,2 +1,2 @@
 # CNN_LSTM
-convolutional Neural Network Long-Short Term Memory for TTS program
+Convolutional neural Network with Long-Short Term Memory
